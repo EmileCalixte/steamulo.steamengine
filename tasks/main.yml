@@ -68,10 +68,10 @@
   tags: always
 
 - include_tasks:
-    file: common/cron.yml
+    file: common/timers.yml
     apply:
       tags:
-        - steamengine_cron
+        - steamengine_systemd_timer
   tags: always
 
 - include_tasks:

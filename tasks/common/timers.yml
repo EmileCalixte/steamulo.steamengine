@@ -1,0 +1,36 @@
+---
+
+# TODO ajouter options OnBootSec, OnUnitActiveSec ?
+# TODO ajouter ulimits
+
+- name: Configure project timers
+  tasks:
+    - name: Timers configuration
+      loop: "{{ steamengine_timers }}"
+      block: # TODO regarder pourquoi c'est exécuté deux fois - première fois /if_digital_dev - deuxième fois /if_digital_staging
+        - name: Create timer service
+          ansible.builtin.template:
+            src: systemd_timer.service.j2
+            dest: "/etc/systemd/system/{{ item.name }}.service"
+          vars:
+            description: "{{ item.description | default(item.name) }}"
+            command: "bash -c '{{ steamengine_bin_path }}/steamengine {{ item.name }} | tee --append {{ steamengine_logs_path }}/timer_{{ item.name }}.log 2>&1'"
+
+        - name: Create timer
+          ansible.builtin.template:
+            src: systemd_timer.timer.j2
+            dest: "/etc/systemd/system/{{ item.name }}.timer"
+          vars:
+            description: "{{ item.description | default(item.name) }}"
+            on_calendar: "{{ item.on_calendar }}"
+            persistent: "{{ item.persistent | default(false) }}"
+            wanted_by: "{{ item.wanted_by | default('timers.target') }}"
+
+      notify: Restart timer service # TODO vérifier qu'on peut appeler notify sur un block => d'après internet à partir d'ansible 2.11, mais on est en 2.10 et ça SEMBLE fonctionner
+
+  handlers: # TODO si on garde le système de handlers, modifier la gestion du disabled
+    - name: Restart timer
+      ansible.builtin.systemd:
+        name: "{{ item.name }}.timer"
+        enabled: "{{ not item.disabled }}"
+        state: "{{ item.disabled | ternary('stopped', 'restarted') }}"

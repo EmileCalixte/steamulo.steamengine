@@ -8,7 +8,14 @@ steamengine_wrapper_scripts_cron: |
   {% endfor %}
   {{ l }}
 
-steamengine_wrapper_scripts: "{{ steamengine_wrapper_scripts_base | union(steamengine_wrapper_scripts_extra) | union(steamengine_wrapper_scripts_cron) }}"
+steamengine_wrapper_scripts_systemd_timers: |
+  {% set l = [] %}
+  {% for timer in steamengine_timers %}
+  {% set _ = l.append({'name': timer.name, 'description': timer.description, 'command': timer.command, 'run_as_app_user': timer.run_as_app_user | default(omit), 'run_in_project_root_path_web': timer.run_in_project_root_path_web | default(omit)}) %}
+  {% endfor %}
+  {{ l }}
+
+steamengine_wrapper_scripts: "{{ steamengine_wrapper_scripts_base | union(steamengine_wrapper_scripts_extra) | union(steamengine_wrapper_scripts_cron) | union(steamengine_wrapper_scripts_systemd_timers) }}"
 
 # USERS
 steamengine_project_user: "{{ steamengine_project_name }}"
