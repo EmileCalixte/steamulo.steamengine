@@ -75,6 +75,13 @@
   tags: always
 
 - include_tasks:
+    file: common/systemd_timers.yml
+    apply:
+      tags:
+        - steamengine_systemd_timer
+  tags: always
+
+- include_tasks:
     file: common/post_deploy.yml
     apply:
       tags:

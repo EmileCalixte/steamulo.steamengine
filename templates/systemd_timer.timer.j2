@@ -1,0 +1,15 @@
+[Unit]
+Description={{ description }}
+
+[Service]
+ExecStart={{ command }}
+
+[Timer]
+OnCalendar={{ oncalendar }}
+Persistent={{ persistent }}
+{% if run_as_app_user is defined and run_as_app_user %}
+User={{ steamengine_project_user }}
+{% endif %}
+
+[Install]
+WantedBy={{ target }}
